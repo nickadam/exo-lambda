@@ -12,10 +12,14 @@ COPY execpwsh.go ./
 RUN go build -o /execpwsh
 
 
-FROM public.ecr.aws/lambda/provided:al2
+FROM mcr.microsoft.com/powershell:latest
 
-# install powershell
-RUN yum install -y https://github.com/PowerShell/PowerShell/releases/download/v7.2.1/powershell-lts-7.2.1-1.rh.x86_64.rpm
+# Install powershell modules
+RUN pwsh -command 'Install-Module -Name ExchangeOnlineManagement -Scope AllUsers -Force \
+  && Install-Module -Name PSWSMan -Scope AllUsers -Force \
+  && Install-Module -Name AWS.Tools.Installer -Scope AllUsers -Force \
+  && Install-AWSToolsModule AWS.Tools.SecretsManager,AWS.Tools.S3 -Scope AllUsers -Force \
+  && Install-WSMan'
 
 COPY --from=build /execpwsh /
 

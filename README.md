@@ -23,7 +23,20 @@ And here is the resultant idea:
 ```
 git clone https://github.com/nickadam/exo-lambda.git
 cd exo-lambda
+
 docker compose build -t exo-lambda-test
-docker run --rm -v ~/.aws-lambda-rie:/aws-lambda --entrypoint /aws-lambda/aws-lambda-rie -e AWS_LAMBDA_RUNTIME_API=/aws-lambda/aws-lambda-rie -p 9000:8080 test /execpwsh
+
+docker run --rm \
+  -e AWS_LAMBDA_RUNTIME_API=/aws-lambda/aws-lambda-rie \
+  -e PFX_PATH=/exchange.pfx \
+  -e PFX_PASSWORD=password \
+  -e AAD_APPID=7b8ecf48-910d-4ddc-baff-995508d60cd6 \
+  -e AAD_ORGANIZATION=myorg.onmicrosoft.com \
+  -v ~/exchange.pfx:/exchange.pfx \
+  -v ~/.aws-lambda-rie:/aws-lambda \
+  -p 9000:8080 \
+  --entrypoint /aws-lambda/aws-lambda-rie \
+  exo-lambda-test /execpwsh
+
 curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"arg": "some argument"}'
 ```
