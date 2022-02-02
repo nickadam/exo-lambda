@@ -14,10 +14,16 @@ Here is what I learned:
 
 And here is the resultant idea:
 - Start with Amazon Linux 2
-- Add the "stuff" from another lambda container image to implement the runtime API
+- Implement the "stuff" with a small go program
 - Install PowerShell
 - Install ExchangeOnlineMangement
 - Establish a method of executing ps1 scripts
 
-For the "stuff", I figured the [lambda container image for go](https://github.com/aws/aws-lambda-base-images/tree/go1.x) may have the least amount of junk
-since go programs are compiled and statically linked.
+## Testing with [RIE](https://docs.aws.amazon.com/lambda/latest/dg/images-test.html)
+```
+git clone https://github.com/nickadam/exo-lambda.git
+cd exo-lambda
+docker compose build -t exo-lambda-test
+docker run --rm -v ~/.aws-lambda-rie:/aws-lambda --entrypoint /aws-lambda/aws-lambda-rie -e AWS_LAMBDA_RUNTIME_API=/aws-lambda/aws-lambda-rie -p 9000:8080 test /execpwsh
+curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"arg": "some argument"}'
+```
