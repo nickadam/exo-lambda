@@ -1,3 +1,13 @@
+$AWS = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args)) | ConvertFrom-Json
+
+# $AWS.context.function_name
+# $AWS.context.function_version
+# $AWS.context.invoked_function_arn
+# $AWS.context.memory_limit_in_mb
+# $AWS.context.aws_request_id
+# $AWS.context.log_group_name
+# $AWS.event
+
 $PFX_AWS_SECRET_NAME = $Env:PFX_AWS_SECRET_NAME
 $PFX_PATH = $Env:PFX_PATH
 $PFX_PASSWORD = $Env:PFX_PASSWORD
@@ -17,9 +27,16 @@ if($PFX_AWS_SECRET_NAME){
 if($PFX_PATH){
   $pfx = $PFX_PATH
 }
+$PfxPwSecureString = (ConvertTo-SecureString -String $PFX_PASSWORD -AsPlainText -Force)
 
-if($PFX_PASSWORD){
-  $PfxPwSecureString = (ConvertTo-SecureString -String $PFX_PASSWORD -AsPlainText -Force)
+function Connect-EXO {
+  Connect-ExchangeOnline -CertificateFilePath $pfx -CertificatePassword $PfxPwSecureString -AppID $AAD_APPID -Organization $AAD_ORGANIZATION
 }
 
-Connect-ExchangeOnline -CertificateFilePath $pfx -CertificatePassword $PfxPwSecureString -AppID $AAD_APPID -Organization $AAD_ORGANIZATION 2>&1 | Out-File /dev/null
+
+# your code below
+
+if($AWS.Event.EmailAddress){
+  Connect-EXO # this takes a long time (~1 min)
+  Get-EXOMailbox $AWS.Event.EmailAddress | ConvertTo-Json -Compress
+}
