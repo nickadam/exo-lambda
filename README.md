@@ -13,11 +13,24 @@ Here is what I learned:
 - There is "stuff" in lambda container images that implements the [lambda runtime API](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html)
 
 And here is the resultant idea:
-- Start with Amazon Linux 2
-- Implement the "stuff" with a small go program
-- Install PowerShell
+- Start with microsoft powershell
 - Install ExchangeOnlineMangement
+- Install python
+- Implement the AWS lambda "stuff" with python
 - Establish a method of executing ps1 scripts
+
+## Environment variables
+Name | Required | Acceptable values | Value if not specified | Description
+---|---|---|---|---
+PWSH_SCRIPT | No | | /script/example_script.ps1 | Path to script that will be executed, see `example_script.ps1`
+FAIL_IF_STDERR | No | 1, 0 | 0 | Cause the lambda function to fail if there is any output in STDERR
+OUTPUT | No | STDOUT, STDERR, LAST_LINE_JSON | STDOUT and STDERR | Specify if you want just stdout, just stderr, or to parse the last line of your script output as a JSON object
+AAD_APPID | Yes | | | The app id from Azure AD app registration
+AAD_ORGANIZATION | Yes | | | Your organization, example.onmicrosoft.com
+PFX_PASSWORD | Yes | | | The password to you pfx
+PFX_PATH | No | | | Path to the pfx if you want to include it in the image (not recommended for prod but good for testing)
+PFX_AWS_SECRET_NAME | No | | | The name of you AWS secret that contains the binary pfx (use in prod)
+
 
 ## Testing with [RIE](https://docs.aws.amazon.com/lambda/latest/dg/images-test.html)
 ```
@@ -36,7 +49,7 @@ docker run --rm \
   -v ~/.aws-lambda-rie:/aws-lambda \
   -p 9000:8080 \
   --entrypoint /aws-lambda/aws-lambda-rie \
-  exo-lambda-test /execpwsh
+  python3 -m awslambdaric execpwsh.handler
 
 curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"arg": "some argument"}'
 ```
